@@ -155,7 +155,7 @@ SensorAxes_t tmp_mag;
 /* USER CODE END 0 */
 
 
- int main(void)
+int main(void)
 {
 
   /* USER CODE BEGIN 1 */
@@ -327,8 +327,8 @@ SensorAxes_t tmp_mag;
 
     /* USER CODE BEGIN 3 */
 
-    if (tim9_event_flag == 1)
-    {     // Timer9 event: frequency 50Hz
+  if (tim9_event_flag == 1)
+    {     // Timer9 event: frequency 160Hzの割り込み
       tim9_event_flag = 0;
 
       count1++;
@@ -340,6 +340,7 @@ SensorAxes_t tmp_mag;
       gyro_ahrs.AXIS_Y = 0;
       gyro_ahrs.AXIS_Z = 0;
 
+      //FIFOから数サンプル分のデータを積算
       for(i=0;i<FIFO_Order;i++)
       {
         acc_ahrs.AXIS_X += acc_ahrs_FIFO[i].AXIS_X;
@@ -350,6 +351,7 @@ SensorAxes_t tmp_mag;
         gyro_ahrs.AXIS_Z += gyro_ahrs_FIFO[i].AXIS_Z;
       }
 
+      //積算したデータから平均に変換
       acc_ahrs.AXIS_X *=FIFO_Order_Recip;
       acc_ahrs.AXIS_Y *=FIFO_Order_Recip;
       acc_ahrs.AXIS_Z *=FIFO_Order_Recip;
@@ -364,18 +366,17 @@ SensorAxes_t tmp_mag;
       gyro_fil_int.AXIS_Y = gyro_ahrs.AXIS_Y;
       gyro_fil_int.AXIS_Z = gyro_ahrs.AXIS_Z;
 
-
       //PRINTF("%f %f %f %f\n", acc_ahrs.AXIS_X, acc_ahrs.AXIS_Y, gyro_ahrs.AXIS_X, gyro_ahrs.AXIS_Y);
 
-      // AHRS update, quaternion & true gyro data are stored in ahrs
+      // AHRS更新、ahrs.c
       ahrs_fusion_ag(&acc_ahrs, &gyro_ahrs, &ahrs);
 
-      // Calculate euler angle drone
+      // クォータニオンからオイラー角へ変換
       QuaternionToEuler(&ahrs.q, &euler_ahrs);
 
       // Get target euler angle from remote control
+      // RCから目標のオイラー角を算出
       GetTargetEulerAngle(&euler_rc, &euler_ahrs);
-
 
       if(gTHR<MIN_THR)
       {
@@ -387,7 +388,6 @@ SensorAxes_t tmp_mag;
       Fly_origin.Y_Degree = (int16_t)(euler_ahrs.thy * 5730);
       Fly_origin.Z_Degree = (int16_t)(euler_ahrs.thz * 5730);
 
-
       if(gTHR<MIN_THR)
       {
         euler_rc.thz = 0;
@@ -398,6 +398,7 @@ SensorAxes_t tmp_mag;
       euler_rc_fil.thy = euler_rc.thy;
       euler_rc_fil.thz = euler_rc.thz;
 
+      //姿勢角度制御の計算（アウトループ）、flightcontrol.c
       FlightControlPID_OuterLoop(&euler_rc_fil, &euler_ahrs, &ahrs, &pid);
 
     }
@@ -452,7 +453,7 @@ SensorAxes_t tmp_mag;
 //        }
 //    HAL_ADC_Stop(&hadc1);
 
-  }
+  } //End While(1)
   /* USER CODE END 3 */
 
 }
