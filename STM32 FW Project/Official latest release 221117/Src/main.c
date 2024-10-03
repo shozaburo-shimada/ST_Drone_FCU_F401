@@ -1,35 +1,35 @@
 /**
-  ******************************************************************************
-  * File Name          : main.c
-  * Description        : Main program body
-  ******************************************************************************
-  *
-  * COPYRIGHT(c) 2017 STMicroelectronics
-  *
-  * Redistribution and use in source and binary forms, with or without modification,
-  * are permitted provided that the following conditions are met:
-  *   1. Redistributions of source code must retain the above copyright notice,
-  *      this list of conditions and the following disclaimer.
-  *   2. Redistributions in binary form must reproduce the above copyright notice,
-  *      this list of conditions and the following disclaimer in the documentation
-  *      and/or other materials provided with the distribution.
-  *   3. Neither the name of STMicroelectronics nor the names of its contributors
-  *      may be used to endorse or promote products derived from this software
-  *      without specific prior written permission.
-  *
-  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-  * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-  * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-  * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-  * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-  * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * File Name          : main.c
+ * Description        : Main program body
+ ******************************************************************************
+ *
+ * COPYRIGHT(c) 2017 STMicroelectronics
+ *
+ * Redistribution and use in source and binary forms, with or without modification,
+ * are permitted provided that the following conditions are met:
+ *   1. Redistributions of source code must retain the above copyright notice,
+ *      this list of conditions and the following disclaimer.
+ *   2. Redistributions in binary form must reproduce the above copyright notice,
+ *      this list of conditions and the following disclaimer in the documentation
+ *      and/or other materials provided with the distribution.
+ *   3. Neither the name of STMicroelectronics nor the names of its contributors
+ *      may be used to endorse or promote products derived from this software
+ *      without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ ******************************************************************************
+ */
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_hal.h"
@@ -68,7 +68,7 @@ static void *LSM6DSL_X_0_handle = NULL;
 static void *LSM6DSL_G_0_handle = NULL;
 static void *LIS2MDL_M_0_handle = NULL;
 static void *LPS22HB_P_0_handle = NULL;
-//static void *LPS22HB_T_0_handle = NULL;       /* To be used in case Temperature reading is needed */
+// static void *LPS22HB_T_0_handle = NULL;       /* To be used in case Temperature reading is needed */
 
 extern Queue_TypeDef que;
 extern volatile tUserTimer tim;
@@ -83,7 +83,6 @@ unsigned char ch, ch_flag;
 uint32_t tim9_event_flag = 0, tim9_cnt = 0, tim9_cnt2 = 0;
 float tmp_euler_z = 0;
 
-
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
@@ -95,9 +94,8 @@ static void MX_TIM4_Init(void);
 static void MX_TIM9_Init(void);
 static void MX_USART1_UART_Init(void);
 
-static void initializeAllSensors( void );
-void enableAllSensors( void );
-
+static void initializeAllSensors(void);
+void enableAllSensors(void);
 
 /* USER CODE BEGIN 0 */
 P_PI_PIDControlTypeDef pid;
@@ -116,30 +114,30 @@ typedef struct
   int16_t X_Degree;
   int16_t Y_Degree;
   int16_t Z_Degree;
-}Attitude_Degree;
+} Attitude_Degree;
 
 typedef struct
 {
   float a1, a2, b0, b1, b2;
-}IIR_Coeff;
+} IIR_Coeff;
 
-//sensor filter
-//7hz, 800hz
-//IIR_Coeff gyro_fil_coeff = {1.922286512869545,  -0.92519529534950118, 0.00072719561998898304, 0.0014543912399779661, 0.00072719561998898304};
+// sensor filter
+// 7hz, 800hz
+// IIR_Coeff gyro_fil_coeff = {1.922286512869545,  -0.92519529534950118, 0.00072719561998898304, 0.0014543912399779661, 0.00072719561998898304};
 
-//15hz, 800hz
-//IIR_Coeff gyro_fil_coeff = {1.8337326589246479,  -0.84653197479202391, 0.003199828966843966, 0.0063996579336879321, 0.003199828966843966};
+// 15hz, 800hz
+// IIR_Coeff gyro_fil_coeff = {1.8337326589246479,  -0.84653197479202391, 0.003199828966843966, 0.0063996579336879321, 0.003199828966843966};
 
-//30hz, 800hz
-//IIR_Coeff gyro_fil_coeff = {1.66920314293119312,  -0.71663387350415764, 0.011857682643241156, 0.023715365286482312, 0.011857682643241156};
+// 30hz, 800hz
+// IIR_Coeff gyro_fil_coeff = {1.66920314293119312,  -0.71663387350415764, 0.011857682643241156, 0.023715365286482312, 0.011857682643241156};
 
-//60hz, 800hz
-//IIR_Coeff gyro_fil_coeff = {1.3489677452527946 ,  -0.51398189421967566, 0.041253537241720303, 0.082507074483440607, 0.041253537241720303};
+// 60hz, 800hz
+// IIR_Coeff gyro_fil_coeff = {1.3489677452527946 ,  -0.51398189421967566, 0.041253537241720303, 0.082507074483440607, 0.041253537241720303};
 
-//100hz, 800hz
-IIR_Coeff gyro_fil_coeff = {0.94280904158206336,  -0.33333333333333343, 0.09763107293781749 , 0.19526214587563498 , 0.09763107293781749 };
+// 100hz, 800hz
+IIR_Coeff gyro_fil_coeff = {0.94280904158206336, -0.33333333333333343, 0.09763107293781749, 0.19526214587563498, 0.09763107293781749};
 
-Attitude_Degree  Fly, Fly_offset, Fly_origin;
+Attitude_Degree Fly, Fly_offset, Fly_origin;
 Gyro_Rad gyro_rad, gyro_degree, gyro_cali_degree;
 MotorControlTypeDef motor_pwm;
 int count1 = 0, count2 = 0;
@@ -154,13 +152,12 @@ SensorAxes_t tmp_mag;
 
 /* USER CODE END 0 */
 
-
 int main(void)
 {
 
   /* USER CODE BEGIN 1 */
   int16_t pid_interval, i;
-  
+
   int mytimcnt = 0;
   acc_fil.AXIS_X = 0;
   acc_fil.AXIS_Y = 0;
@@ -190,7 +187,7 @@ int main(void)
   euler_ahrs_offset.thx = 0;
   euler_ahrs_offset.thy = 0;
 
-  for(i=0;i<4;i++)
+  for (i = 0; i < 4; i++)
   {
     acc_y_pre[i].AXIS_X = 0;
     acc_y_pre[i].AXIS_Y = 0;
@@ -224,80 +221,80 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_ADC1_Init();  
+  MX_ADC1_Init();
   MX_TIM2_Init();
   MX_TIM4_Init();
   MX_TIM9_Init();
   MX_USART1_UART_Init();
-  //MX_USB_DEVICE_Init();
- 
+  // MX_USB_DEVICE_Init();
+
   /* USER CODE BEGIN 2 */
 
   PRINTF("STEVAL-FCU001V1 FW rev.1.0 - Sep 2017\n\n");
-  
-//  Initialize Onboard LED
+
+  //  Initialize Onboard LED
   BSP_LED_Init(LED1);
   BSP_LED_Init(LED2);
   BSP_LED_Off(LED1);
   BSP_LED_Off(LED2);
   BSP_LED_On(LED1);
   BSP_LED_On(LED2);
-  
+
   /* Configure and disable all the Chip Select pins for sensors on SPI*/
   Sensor_IO_SPI_CS_Init_All();
-  
+
   /* Initialize and Enable the available sensors on SPI*/
   initializeAllSensors();
   enableAllSensors();
-  
+
   /* Initialize settings for 6-axis MEMS Accelerometer */
   /* ODR 6.6kHz */
   /* FS 4g */
   /* Analog Filter Bandwith @ 1500Hz */
   /* ODR/2 low pass filtered sent to composite filter */
   /* Low pass filter enabled @ ODR/400 */
-  //BSP_ACCELERO_Set_ODR_Value(LSM6DSL_X_0_handle, 1660.0);       /* ODR 1.6kHz */
-  BSP_ACCELERO_Set_ODR_Value(LSM6DSL_X_0_handle, 6660.0);       /* ODR 6.6kHz */
-  BSP_ACCELERO_Set_FS(LSM6DSL_X_0_handle, FS_MID);                   /* FS 4g */
-  //LSM6DSL_ACC_GYRO_W_InComposit(LSM6DSL_X_0_handle, LSM6DSL_ACC_GYRO_IN_ODR_DIV_4);   /* ODR/4 low pass filtered sent to composite filter */
-  LSM6DSL_ACC_GYRO_W_InComposit(LSM6DSL_X_0_handle, LSM6DSL_ACC_GYRO_IN_ODR_DIV_2);   /* ODR/2 low pass filtered sent to composite filter */
+  // BSP_ACCELERO_Set_ODR_Value(LSM6DSL_X_0_handle, 1660.0);       /* ODR 1.6kHz */
+  BSP_ACCELERO_Set_ODR_Value(LSM6DSL_X_0_handle, 6660.0); /* ODR 6.6kHz */
+  BSP_ACCELERO_Set_FS(LSM6DSL_X_0_handle, FS_MID);        /* FS 4g */
+  // LSM6DSL_ACC_GYRO_W_InComposit(LSM6DSL_X_0_handle, LSM6DSL_ACC_GYRO_IN_ODR_DIV_4);   /* ODR/4 low pass filtered sent to composite filter */
+  LSM6DSL_ACC_GYRO_W_InComposit(LSM6DSL_X_0_handle, LSM6DSL_ACC_GYRO_IN_ODR_DIV_2);          /* ODR/2 low pass filtered sent to composite filter */
   LSM6DSL_ACC_GYRO_W_LowPassFiltSel_XL(LSM6DSL_X_0_handle, LSM6DSL_ACC_GYRO_LPF2_XL_ENABLE); /* Enable LPF2 filter in composite filter block */
-  //LSM6DSL_ACC_GYRO_W_HPCF_XL(LSM6DSL_X_0_handle, LSM6DSL_ACC_GYRO_HPCF_XL_DIV4); /* Low pass filter @ ODR/50 */
-  //LSM6DSL_ACC_GYRO_W_HPCF_XL(LSM6DSL_X_0_handle, LSM6DSL_ACC_GYRO_HPCF_XL_DIV100); /* Low pass filter @ ODR/100 */
+  // LSM6DSL_ACC_GYRO_W_HPCF_XL(LSM6DSL_X_0_handle, LSM6DSL_ACC_GYRO_HPCF_XL_DIV4); /* Low pass filter @ ODR/50 */
+  // LSM6DSL_ACC_GYRO_W_HPCF_XL(LSM6DSL_X_0_handle, LSM6DSL_ACC_GYRO_HPCF_XL_DIV100); /* Low pass filter @ ODR/100 */
   LSM6DSL_ACC_GYRO_W_HPCF_XL(LSM6DSL_X_0_handle, LSM6DSL_ACC_GYRO_HPCF_XL_DIV400); /* Low pass filter @ ODR/400 */
   uint8_t tmp_6axis_reg_value;
   BSP_ACCELERO_Read_Reg(LSM6DSL_X_0_handle, 0x10, &tmp_6axis_reg_value);
-  //tmp_6axis_reg_value = tmp_6axis_reg_value | 0x01;                             /* Set LSB to 1 >> Analog filter 400Hz*/
-  tmp_6axis_reg_value = tmp_6axis_reg_value & 0xFE;                             /* Set LSB to 0 >> Analog filter 1500Hz*/
+  // tmp_6axis_reg_value = tmp_6axis_reg_value | 0x01;                             /* Set LSB to 1 >> Analog filter 400Hz*/
+  tmp_6axis_reg_value = tmp_6axis_reg_value & 0xFE; /* Set LSB to 0 >> Analog filter 1500Hz*/
   BSP_ACCELERO_Write_Reg(LSM6DSL_X_0_handle, 0x10, tmp_6axis_reg_value);
-  
+
   /* Initialize settings for 6-axis MEMS Gyroscope */
   /* FS 2000dps */
   /* ODR 416Hz */
   /* LPF1 FTYPE set to 10b */
-  LSM6DSL_ACC_GYRO_W_LP_BW_G(LSM6DSL_G_0_handle, LSM6DSL_ACC_GYRO_LP_G_NARROW); /* LPF1 FTYPE set to 10b */                                                      
+  LSM6DSL_ACC_GYRO_W_LP_BW_G(LSM6DSL_G_0_handle, LSM6DSL_ACC_GYRO_LP_G_NARROW); /* LPF1 FTYPE set to 10b */
   BSP_GYRO_Write_Reg(LSM6DSL_G_0_handle, 0x11, 0x6C);                           /* Gyroscope settings: full scale 2000dps, ODR 416Hz */
-  
+
   /* Initialize settings for Magnetometer settings (By default after reset is in in idle mode) */
   /* Register CFG_REG_A 0x60 = 0x8c */
   /* Register 0x61 = 0x02 */
   BSP_MAGNETO_Write_Reg(LIS2MDL_M_0_handle, 0x60, 0x8c);
   BSP_MAGNETO_Write_Reg(LIS2MDL_M_0_handle, 0x61, 0x02);
-  
+
   /* Initialize Remote control*/
   init_remote_control();
 
   /* Initialize TIM2 for External Remocon RF receiver PWM Input*/
-  HAL_TIM_IC_Start_IT(&htim2,TIM_CHANNEL_1);
-  HAL_TIM_IC_Start_IT(&htim2,TIM_CHANNEL_2);
-  HAL_TIM_IC_Start_IT(&htim2,TIM_CHANNEL_3);
-  HAL_TIM_IC_Start_IT(&htim2,TIM_CHANNEL_4);
+  HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_1);
+  HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_2);
+  HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_3);
+  HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_4);
 
   /* Initialize TIM4 for Motors PWM Output*/
-  HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_1);
-  HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_2);
-  HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_3);
-  HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_4);
+  HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_1);
+  HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_2);
+  HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_3);
+  HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_4);
 
   /* Initialize General purpose TIM9 50Hz*/
   HAL_TIM_Base_Start_IT(&htim9);
@@ -307,18 +304,16 @@ int main(void)
   set_motor_pwm_zero(&motor_pwm);
 
   /* Setup a timer with 5ms interval */
-  pid_interval = PID_SAMPLING_TIME*1000;
+  pid_interval = PID_SAMPLING_TIME * 1000;
   SetupTimer(&tim, pid_interval);
 
   /* Start timer */
   StartTimer(&tim);
   ch = 0;
   ch_flag = 0;
-  
+
   /* USER CODE END 2 */
 
-  
-  
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
@@ -327,12 +322,12 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 
-  if (tim9_event_flag == 1)
-    {     // Timer9 event: frequency 160Hzの割り込み
+    if (tim9_event_flag == 1)
+    { // Timer9 event: frequency 160Hzの割り込み
       tim9_event_flag = 0;
 
       count1++;
-           
+
       acc_ahrs.AXIS_X = 0;
       acc_ahrs.AXIS_Y = 0;
       acc_ahrs.AXIS_Z = 0;
@@ -340,8 +335,8 @@ int main(void)
       gyro_ahrs.AXIS_Y = 0;
       gyro_ahrs.AXIS_Z = 0;
 
-      //FIFOから数サンプル分のデータを積算
-      for(i=0;i<FIFO_Order;i++)
+      // FIFOから数サンプル分のデータを積算
+      for (i = 0; i < FIFO_Order; i++)
       {
         acc_ahrs.AXIS_X += acc_ahrs_FIFO[i].AXIS_X;
         acc_ahrs.AXIS_Y += acc_ahrs_FIFO[i].AXIS_Y;
@@ -351,13 +346,13 @@ int main(void)
         gyro_ahrs.AXIS_Z += gyro_ahrs_FIFO[i].AXIS_Z;
       }
 
-      //積算したデータから平均に変換
-      acc_ahrs.AXIS_X *=FIFO_Order_Recip;
-      acc_ahrs.AXIS_Y *=FIFO_Order_Recip;
-      acc_ahrs.AXIS_Z *=FIFO_Order_Recip;
-      gyro_ahrs.AXIS_X *=FIFO_Order_Recip;
-      gyro_ahrs.AXIS_Y *=FIFO_Order_Recip;
-      gyro_ahrs.AXIS_Z *=FIFO_Order_Recip;
+      // 積算したデータから平均に変換
+      acc_ahrs.AXIS_X *= FIFO_Order_Recip;
+      acc_ahrs.AXIS_Y *= FIFO_Order_Recip;
+      acc_ahrs.AXIS_Z *= FIFO_Order_Recip;
+      gyro_ahrs.AXIS_X *= FIFO_Order_Recip;
+      gyro_ahrs.AXIS_Y *= FIFO_Order_Recip;
+      gyro_ahrs.AXIS_Z *= FIFO_Order_Recip;
 
       acc_fil_int.AXIS_X = acc_ahrs.AXIS_X;
       acc_fil_int.AXIS_Y = acc_ahrs.AXIS_Y;
@@ -366,19 +361,19 @@ int main(void)
       gyro_fil_int.AXIS_Y = gyro_ahrs.AXIS_Y;
       gyro_fil_int.AXIS_Z = gyro_ahrs.AXIS_Z;
 
-      //PRINTF("%f %f %f %f\n", acc_ahrs.AXIS_X, acc_ahrs.AXIS_Y, gyro_ahrs.AXIS_X, gyro_ahrs.AXIS_Y);
+      // PRINTF("%f %f %f %f\n", acc_ahrs.AXIS_X, acc_ahrs.AXIS_Y, gyro_ahrs.AXIS_X, gyro_ahrs.AXIS_Y);
 
-      // AHRS更新、ahrs.c
+      // AHRS更新、ahrs.c(センサーデータから姿勢クォータニオンの算出)
       ahrs_fusion_ag(&acc_ahrs, &gyro_ahrs, &ahrs);
 
-      // クォータニオンからオイラー角へ変換
+      // 現在の姿勢をクォータニオンからオイラー角へ変換
       QuaternionToEuler(&ahrs.q, &euler_ahrs);
 
       // Get target euler angle from remote control
-      // RCから目標のオイラー角を算出
+      // RCから目標のオイラー角を算出(euler_rc), euler_ahrsは使わない
       GetTargetEulerAngle(&euler_rc, &euler_ahrs);
 
-      if(gTHR<MIN_THR)
+      if (gTHR < MIN_THR)
       {
         euler_ahrs_offset.thx = 0;
         euler_ahrs_offset.thy = 0;
@@ -388,7 +383,7 @@ int main(void)
       Fly_origin.Y_Degree = (int16_t)(euler_ahrs.thy * 5730);
       Fly_origin.Z_Degree = (int16_t)(euler_ahrs.thz * 5730);
 
-      if(gTHR<MIN_THR)
+      if (gTHR < MIN_THR)
       {
         euler_rc.thz = 0;
         euler_ahrs.thz = 0;
@@ -398,81 +393,79 @@ int main(void)
       euler_rc_fil.thy = euler_rc.thy;
       euler_rc_fil.thz = euler_rc.thz;
 
-      //姿勢角度制御の計算（アウトループ）、flightcontrol.c
+      // 姿勢角度制御の計算（アウトループ）、ahrs使ってない。pidを計算する。
       FlightControlPID_OuterLoop(&euler_rc_fil, &euler_ahrs, &ahrs, &pid);
-
     }
 
-  if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_1) == GPIO_PIN_SET)
-  {
-    ch_flag = 1;
-  }
+    if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_1) == GPIO_PIN_SET)
+    {
+      ch_flag = 1;
+    }
 
-  if (isTimerEventExist(&tim))    // Check if a timer event is present
-  {
+    if (isTimerEventExist(&tim)) // Check if a timer event is present
+    {
 
-        ClearTimer(&tim);           // Clear current event;
+      ClearTimer(&tim); // Clear current event;
 
-        count2++;
+      count2++;
 
-        mytimcnt++;
-        if (rc_connection_flag && rc_enable_motor)
-        {
-          if (mytimcnt%50 == 0)
+      mytimcnt++;
+      if (rc_connection_flag && rc_enable_motor)
+      {
+        if (mytimcnt % 50 == 0)
           BSP_LED_On(LED2);
-        }
-        else
-        {
-          if (mytimcnt%50 == 0)
-            BSP_LED_Toggle(LED2);
-        }
+      }
+      else
+      {
+        if (mytimcnt % 50 == 0)
+          BSP_LED_Toggle(LED2);
+      }
     }
-  
+
     /* Added for debug on UART*/
     /* Remocon ELE, AIL, RUD, THR, Motor1_pwm, AHRS Euler angle x and y axis */
     PRINTF("%d\t%d\t%d\t%d\t%f\t%f\t%f\t%f\t%f\n", gELE, gAIL, gRUD, gTHR, motor_pwm.motor1_pwm, euler_ahrs.thx * 57.3, euler_ahrs.thy * 57.3, euler_rc.thx * 57.3, euler_rc.thy * 57.3);
-    
+
     /* Remocon THR, Acc and Gyro FIFO data x and y axis, AHRS Euler angle x and y axis, Remocon Euler angle x and y axis*/
-    //PRINTF("%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n", gTHR, acc_ahrs.AXIS_X, acc_ahrs.AXIS_Y, gyro_ahrs.AXIS_X, gyro_ahrs.AXIS_Y, euler_ahrs.thx * 57.3, euler_ahrs.thy * 57.3, euler_rc.thx * 57.3, euler_rc.thy * 57.3);
+    // PRINTF("%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n", gTHR, acc_ahrs.AXIS_X, acc_ahrs.AXIS_Y, gyro_ahrs.AXIS_X, gyro_ahrs.AXIS_Y, euler_ahrs.thx * 57.3, euler_ahrs.thy * 57.3, euler_rc.thx * 57.3, euler_rc.thy * 57.3);
     /* MEMS Accelerometer RAW data */
-    //PRINTF("%d\t%d\t%d\t\n", acc.AXIS_X, acc.AXIS_Y, acc.AXIS_Z);
-      
-//    /* Pressure data on UART for debug*/
-//    PRINTF("Pressure [atm] = %f\n\n",pre);  
-//    /* Magnetometer data on UART for debug*/
-//    PRINTF("Magnetometer X = %d\tY = %d\tZ = %d\n\n", mag.AXIS_X, mag.AXIS_Y, mag.AXIS_Z);  
-//    
-//    /* Added reading of Battery voltage and data on UART */
-//    //VBAT_Sense = HAL_ADC_GetValue(&hadc1);
-//    HAL_ADC_Start(&hadc1);
-//        if (HAL_ADC_PollForConversion(&hadc1, 1000000) == HAL_OK)
-//        {
-//            VBAT_Sense = HAL_ADC_GetValue(&hadc1);
-//            VBAT = (((VBAT_Sense*3.3)/4095)*(BAT_RUP+BAT_RDW))/BAT_RDW;
-//            PRINTF("Battery voltage = %fV\n\n", VBAT);
-//        }
-//    HAL_ADC_Stop(&hadc1);
+    // PRINTF("%d\t%d\t%d\t\n", acc.AXIS_X, acc.AXIS_Y, acc.AXIS_Z);
 
-  } //End While(1)
+    //    /* Pressure data on UART for debug*/
+    //    PRINTF("Pressure [atm] = %f\n\n",pre);
+    //    /* Magnetometer data on UART for debug*/
+    //    PRINTF("Magnetometer X = %d\tY = %d\tZ = %d\n\n", mag.AXIS_X, mag.AXIS_Y, mag.AXIS_Z);
+    //
+    //    /* Added reading of Battery voltage and data on UART */
+    //    //VBAT_Sense = HAL_ADC_GetValue(&hadc1);
+    //    HAL_ADC_Start(&hadc1);
+    //        if (HAL_ADC_PollForConversion(&hadc1, 1000000) == HAL_OK)
+    //        {
+    //            VBAT_Sense = HAL_ADC_GetValue(&hadc1);
+    //            VBAT = (((VBAT_Sense*3.3)/4095)*(BAT_RUP+BAT_RDW))/BAT_RDW;
+    //            PRINTF("Battery voltage = %fV\n\n", VBAT);
+    //        }
+    //    HAL_ADC_Stop(&hadc1);
+
+  } // End While(1)
   /* USER CODE END 3 */
-
 }
 
 /** System Clock Configuration
-*/
+ */
 void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct;
   RCC_ClkInitTypeDef RCC_ClkInitStruct;
 
-    /**Configure the main internal regulator output voltage 
-    */
+  /**Configure the main internal regulator output voltage
+   */
   __HAL_RCC_PWR_CLK_ENABLE();
 
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE2);
 
-    /**Initializes the CPU, AHB and APB busses clocks 
-    */
+  /**Initializes the CPU, AHB and APB busses clocks
+   */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
@@ -483,29 +476,26 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLQ = 7;
 
   HAL_RCC_OscConfig(&RCC_OscInitStruct);
-  
-    /**Initializes the CPU, AHB and APB busses clocks 
-    */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+
+  /**Initializes the CPU, AHB and APB busses clocks
+   */
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
   HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2);
 
-    /**Configure the Systick interrupt time 
-    */
-  HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
+  /**Configure the Systick interrupt time
+   */
+  HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq() / 1000);
 
-    /**Configure the Systick 
-    */
+  /**Configure the Systick
+   */
   HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
 
   /* SysTick_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
-
-  
 }
 
 /* ADC1 init function */
@@ -514,8 +504,8 @@ void MX_ADC1_Init(void)
 
   ADC_ChannelConfTypeDef sConfig;
 
-    /**Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion)
-    */
+  /**Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion)
+   */
   hadc1.Instance = ADC1;
   hadc1.Init.ClockPrescaler = ADC_CLOCKPRESCALER_PCLK_DIV4;
   hadc1.Init.Resolution = ADC_RESOLUTION12b;
@@ -529,13 +519,12 @@ void MX_ADC1_Init(void)
   hadc1.Init.EOCSelection = EOC_SINGLE_CONV;
   HAL_ADC_Init(&hadc1);
 
-    /**Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
-    */
+  /**Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
+   */
   sConfig.Channel = ADC_CHANNEL_9;
   sConfig.Rank = 1;
   sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
   HAL_ADC_ConfigChannel(&hadc1, &sConfig);
-
 }
 
 /* SPI1 init function */
@@ -555,7 +544,6 @@ void MX_SPI1_Init(void)
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLED;
   hspi1.Init.CRCPolynomial = 10;
   HAL_SPI_Init(&hspi1);
-
 }
 
 /* SPI2 init function */
@@ -575,7 +563,6 @@ void MX_SPI2_Init(void)
   hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLED;
   hspi2.Init.CRCPolynomial = 10;
   HAL_SPI_Init(&hspi2);
-
 }
 
 /* TIM2 init function */
@@ -613,7 +600,6 @@ void MX_TIM2_Init(void)
   HAL_TIM_IC_ConfigChannel(&htim2, &sConfigIC, TIM_CHANNEL_3);
 
   HAL_TIM_IC_ConfigChannel(&htim2, &sConfigIC, TIM_CHANNEL_4);
-
 }
 
 /* TIM4 init function */
@@ -625,17 +611,17 @@ void MX_TIM4_Init(void)
   TIM_OC_InitTypeDef sConfigOC;
 
   htim4.Instance = TIM4;
-  #ifdef MOTOR_DC
-    htim4.Init.Prescaler = 84;                                    /* DC motor configuration - Freq 494Hz*/
-    htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
-    htim4.Init.Period = 1999;                  
-  #endif
-  #ifdef MOTOR_ESC
-    htim4.Init.Prescaler = 100;                                    /* ESC motor configuration - Freq 400Hz*/
-    htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
-    htim4.Init.Period = 2075;                                   
-  #endif
-                                       
+#ifdef MOTOR_DC
+  htim4.Init.Prescaler = 84; /* DC motor configuration - Freq 494Hz*/
+  htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim4.Init.Period = 1999;
+#endif
+#ifdef MOTOR_ESC
+  htim4.Init.Prescaler = 100; /* ESC motor configuration - Freq 400Hz*/
+  htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim4.Init.Period = 2075;
+#endif
+
   htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   HAL_TIM_Base_Init(&htim4);
 
@@ -659,7 +645,6 @@ void MX_TIM4_Init(void)
   HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_3);
 
   HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_4);
-
 }
 
 /* TIM9 init function */
@@ -677,7 +662,6 @@ void MX_TIM9_Init(void)
 
   sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
   HAL_TIM_ConfigClockSource(&htim9, &sClockSourceConfig);
-
 }
 
 /* USART1 init function */
@@ -693,18 +677,17 @@ void MX_USART1_UART_Init(void)
   huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
   huart1.Init.OverSampling = UART_OVERSAMPLING_16;
   HAL_UART_Init(&huart1);
-
 }
 
 /** Configure pins as
-        * Analog
-        * Input
-        * Output
-        * EVENT_OUT
-        * EXTI
-        * Free pins are configured automatically as Analog (this feature is enabled through
-        * the Code Generation settings)
-*/
+ * Analog
+ * Input
+ * Output
+ * EVENT_OUT
+ * EXTI
+ * Free pins are configured automatically as Analog (this feature is enabled through
+ * the Code Generation settings)
+ */
 void MX_GPIO_Init(void)
 {
 
@@ -716,12 +699,11 @@ void MX_GPIO_Init(void)
   __GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pins : PB4 PB5 */
-  GPIO_InitStruct.Pin = GPIO_PIN_4|GPIO_PIN_5;
+  GPIO_InitStruct.Pin = GPIO_PIN_4 | GPIO_PIN_5;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
 }
 
 /* USER CODE BEGIN 4 */
@@ -731,11 +713,13 @@ void MX_GPIO_Init(void)
  */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-  if(sensor_init_cali == 0)
+  // FCU起動直後に加速度とジャイロのオフセット取得（校正に利用）
+  if (sensor_init_cali == 0)
   {
     sensor_init_cali_count++;
-
-    if(sensor_init_cali_count > 800)
+    // マイコン起動してから1sec後に実行
+    //  1/800Hz = 1.25ms周期、 これを800カウントするから、(1/800) * 800 = 1sec
+    if (sensor_init_cali_count > 800)
     {
       // Read sensor data and prepare for specific coodinate system
       ReadSensorRawData(LSM6DSL_X_0_handle, LSM6DSL_G_0_handle, LIS2MDL_M_0_handle, LPS22HB_P_0_handle, &acc, &gyro, &mag, &pre);
@@ -771,14 +755,16 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     }
   }
 
-  if(sensor_init_cali == 1)
+  // 初期化終了後から実行
+  if (sensor_init_cali == 1)
   {
     tim9_cnt++;
     tim9_cnt2++;
 
-    // Read sensor data and prepare for specific coodinate system
+    // 加速度、ジャイロ、磁気、気圧データをセンサーから取得
     ReadSensorRawData(LSM6DSL_X_0_handle, LSM6DSL_G_0_handle, LIS2MDL_M_0_handle, LPS22HB_P_0_handle, &acc, &gyro, &mag, &pre);
 
+    // プロボでスティック操作されたときに、再度オフセット取得
     if (rc_cal_flag == 1)
     {
       acc_off_calc.AXIS_X += acc.AXIS_X;
@@ -813,6 +799,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
       }
     }
 
+    // オフセットを引いて校正
     acc.AXIS_X -= acc_offset.AXIS_X;
     acc.AXIS_Y -= acc_offset.AXIS_Y;
     acc.AXIS_Z -= (acc_offset.AXIS_Z - 1000);
@@ -820,27 +807,24 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     gyro.AXIS_Y -= gyro_offset.AXIS_Y;
     gyro.AXIS_Z -= gyro_offset.AXIS_Z;
 
-    // Save filtered data to acc_FIFO
-    acc_FIFO[tim9_cnt2-1].AXIS_X = acc.AXIS_X;
-    acc_FIFO[tim9_cnt2-1].AXIS_Y = acc.AXIS_Y;
-    acc_FIFO[tim9_cnt2-1].AXIS_Z = acc.AXIS_Z;
+    // 加速度データをFIFOへ格納
+    acc_FIFO[tim9_cnt2 - 1].AXIS_X = acc.AXIS_X;
+    acc_FIFO[tim9_cnt2 - 1].AXIS_Y = acc.AXIS_Y;
+    acc_FIFO[tim9_cnt2 - 1].AXIS_Z = acc.AXIS_Z;
 
-    // IIR Filtering on gyro
-    gyro_fil.AXIS_X = gyro_fil_coeff.b0*gyro.AXIS_X + gyro_fil_coeff.b1*gyro_x_pre[0].AXIS_X + gyro_fil_coeff.b2*gyro_x_pre[1].AXIS_X
-                                                    + gyro_fil_coeff.a1*gyro_y_pre[0].AXIS_X + gyro_fil_coeff.a2*gyro_y_pre[1].AXIS_X;
-    gyro_fil.AXIS_Y = gyro_fil_coeff.b0*gyro.AXIS_Y + gyro_fil_coeff.b1*gyro_x_pre[0].AXIS_Y + gyro_fil_coeff.b2*gyro_x_pre[1].AXIS_Y
-                                                    + gyro_fil_coeff.a1*gyro_y_pre[0].AXIS_Y + gyro_fil_coeff.a2*gyro_y_pre[1].AXIS_Y;
-    gyro_fil.AXIS_Z = gyro_fil_coeff.b0*gyro.AXIS_Z + gyro_fil_coeff.b1*gyro_x_pre[0].AXIS_Z + gyro_fil_coeff.b2*gyro_x_pre[1].AXIS_Z
-                                                    + gyro_fil_coeff.a1*gyro_y_pre[0].AXIS_Z + gyro_fil_coeff.a2*gyro_y_pre[1].AXIS_Z;
+    // ジャイロデータgyro.AXIS_X...をフィルタ処理（IIR）
+    gyro_fil.AXIS_X = gyro_fil_coeff.b0 * gyro.AXIS_X + gyro_fil_coeff.b1 * gyro_x_pre[0].AXIS_X + gyro_fil_coeff.b2 * gyro_x_pre[1].AXIS_X + gyro_fil_coeff.a1 * gyro_y_pre[0].AXIS_X + gyro_fil_coeff.a2 * gyro_y_pre[1].AXIS_X;
+    gyro_fil.AXIS_Y = gyro_fil_coeff.b0 * gyro.AXIS_Y + gyro_fil_coeff.b1 * gyro_x_pre[0].AXIS_Y + gyro_fil_coeff.b2 * gyro_x_pre[1].AXIS_Y + gyro_fil_coeff.a1 * gyro_y_pre[0].AXIS_Y + gyro_fil_coeff.a2 * gyro_y_pre[1].AXIS_Y;
+    gyro_fil.AXIS_Z = gyro_fil_coeff.b0 * gyro.AXIS_Z + gyro_fil_coeff.b1 * gyro_x_pre[0].AXIS_Z + gyro_fil_coeff.b2 * gyro_x_pre[1].AXIS_Z + gyro_fil_coeff.a1 * gyro_y_pre[0].AXIS_Z + gyro_fil_coeff.a2 * gyro_y_pre[1].AXIS_Z;
     // Shift IIR filter state
-    for(int i=1;i>0;i--)
+    for (int i = 1; i > 0; i--)
     {
-      gyro_x_pre[i].AXIS_X = gyro_x_pre[i-1].AXIS_X;
-      gyro_x_pre[i].AXIS_Y = gyro_x_pre[i-1].AXIS_Y;
-      gyro_x_pre[i].AXIS_Z = gyro_x_pre[i-1].AXIS_Z;
-      gyro_y_pre[i].AXIS_X = gyro_y_pre[i-1].AXIS_X;
-      gyro_y_pre[i].AXIS_Y = gyro_y_pre[i-1].AXIS_Y;
-      gyro_y_pre[i].AXIS_Z = gyro_y_pre[i-1].AXIS_Z;
+      gyro_x_pre[i].AXIS_X = gyro_x_pre[i - 1].AXIS_X;
+      gyro_x_pre[i].AXIS_Y = gyro_x_pre[i - 1].AXIS_Y;
+      gyro_x_pre[i].AXIS_Z = gyro_x_pre[i - 1].AXIS_Z;
+      gyro_y_pre[i].AXIS_X = gyro_y_pre[i - 1].AXIS_X;
+      gyro_y_pre[i].AXIS_Y = gyro_y_pre[i - 1].AXIS_Y;
+      gyro_y_pre[i].AXIS_Z = gyro_y_pre[i - 1].AXIS_Z;
     }
     gyro_x_pre[0].AXIS_X = gyro.AXIS_X;
     gyro_x_pre[0].AXIS_Y = gyro.AXIS_Y;
@@ -849,17 +833,18 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     gyro_y_pre[0].AXIS_Y = gyro_fil.AXIS_Y;
     gyro_y_pre[0].AXIS_Z = gyro_fil.AXIS_Z;
 
-    //  Save filtered data to gyro_FIFO
-    gyro_FIFO[tim9_cnt2-1].AXIS_X = gyro_fil.AXIS_X;
-    gyro_FIFO[tim9_cnt2-1].AXIS_Y = gyro_fil.AXIS_Y;
-    gyro_FIFO[tim9_cnt2-1].AXIS_Z = gyro_fil.AXIS_Z;
-    
+    // 最終的なジャイロデータをFIFOへ格納
+    gyro_FIFO[tim9_cnt2 - 1].AXIS_X = gyro_fil.AXIS_X;
+    gyro_FIFO[tim9_cnt2 - 1].AXIS_Y = gyro_fil.AXIS_Y;
+    gyro_FIFO[tim9_cnt2 - 1].AXIS_Z = gyro_fil.AXIS_Z;
 
-    if(tim9_cnt2 == FIFO_Order)
+    // FIFOバッファがいっぱいになったとき（5個）の処理、tim9_event_flagを立てる。
+    // 800Hzの処理で5回に1回flagが立つので、tim9_event_flagは160Hz処理になる
+    if (tim9_cnt2 == FIFO_Order)
     {
       tim9_cnt2 = 0;
       tim9_event_flag = 1;
-      for(int i=0;i<FIFO_Order;i++)
+      for (int i = 0; i < FIFO_Order; i++)
       {
         acc_ahrs_FIFO[i].AXIS_X = acc_FIFO[i].AXIS_X;
         acc_ahrs_FIFO[i].AXIS_Y = acc_FIFO[i].AXIS_Y;
@@ -870,124 +855,124 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
       }
     }
 
-      
-      gyro_rad.gx = gyro_fil.AXIS_X*COE_MDPS_TO_RADPS;
-      gyro_rad.gy = gyro_fil.AXIS_Y*COE_MDPS_TO_RADPS;
-      gyro_rad.gz = gyro_fil.AXIS_Z*COE_MDPS_TO_RADPS;
+    // degree/sec から rad/sec へ変換
+    gyro_rad.gx = gyro_fil.AXIS_X * COE_MDPS_TO_RADPS;
+    gyro_rad.gy = gyro_fil.AXIS_Y * COE_MDPS_TO_RADPS;
+    gyro_rad.gz = gyro_fil.AXIS_Z * COE_MDPS_TO_RADPS;
+    // Z軸の角速度を積分して、Z軸周りのオイラー角（水平面内での向き）を算出
+    euler_ahrs.thz += gyro_rad.gz * PID_SAMPLING_TIME;
 
-      euler_ahrs.thz += gyro_rad.gz*PID_SAMPLING_TIME;
+    // プロボのスティックの操作量（gTHR）が、しきい値未満なら、姿勢目標値をゼロクリア
+    if (gTHR < MIN_THR)
+    {
+      euler_rc.thz = 0;
+      euler_ahrs.thz = 0;
+    }
 
-      if(gTHR<MIN_THR)
-      {
-        euler_rc.thz = 0;
-        euler_ahrs.thz = 0;
-      }
+    // 「プロボとの接続が正常」かつ「モーターが動作可能状態」
+    if (rc_connection_flag && rc_enable_motor)
+    {
+      // Inter Loop, 最終的に目標motor_pwmを得る
+      FlightControlPID_innerLoop(&euler_rc_fil, &gyro_rad, &ahrs, &pid, &motor_pwm);
+    }
+    else
+    {
+      // そうじゃないならモーターを止める
+      set_motor_pwm_zero(&motor_pwm);
+    }
 
+    if (gTHR < MIN_THR)
+    {
+      set_motor_pwm_zero(&motor_pwm);
+    }
 
-      if (rc_connection_flag && rc_enable_motor)
-      {   // Do PID Control
-        FlightControlPID_innerLoop(&euler_rc_fil, &gyro_rad, &ahrs, &pid, &motor_pwm);
-      }
-      else
-      {
-        // set motor output zero
-        set_motor_pwm_zero(&motor_pwm);
-      }
-
-      if(gTHR<MIN_THR)
-      {
-        set_motor_pwm_zero(&motor_pwm);
-      }
-
-      set_motor_pwm(&motor_pwm);      /* To comment if want to debug remocon calibration switching off the motors */
+    set_motor_pwm(&motor_pwm); /* To comment if want to debug remocon calibration switching off the motors */
   }
 }
 
-
 /**
-* @brief  Initialize all sensors
-* @param  None
-* @retval None
-*/
-static void initializeAllSensors( void )
+ * @brief  Initialize all sensors
+ * @param  None
+ * @retval None
+ */
+static void initializeAllSensors(void)
 {
-  if (BSP_ACCELERO_Init( LSM6DSL_X_0, &LSM6DSL_X_0_handle ) != COMPONENT_OK)
+  if (BSP_ACCELERO_Init(LSM6DSL_X_0, &LSM6DSL_X_0_handle) != COMPONENT_OK)
   {
-    while(1);
-  }
-  
-  if (BSP_GYRO_Init( LSM6DSL_G_0, &LSM6DSL_G_0_handle ) != COMPONENT_OK)
-  {
-    while(1);
-  }
-  
-  if (BSP_MAGNETO_Init( LIS2MDL_M_0, &LIS2MDL_M_0_handle ) != COMPONENT_OK)
-  {
-    while(1);
-  }
-  
-  
-  if (BSP_PRESSURE_Init( LPS22HB_P_0, &LPS22HB_P_0_handle ) != COMPONENT_OK)
-  {
-    while(1);
+    while (1)
+      ;
   }
 
-//  if (BSP_TEMPERATURE_Init( LPS22HB_T_0, &LPS22HB_T_0_handle ) != COMPONENT_OK)
-//  {
-//    while(1);
-//  }
-//  
-  
+  if (BSP_GYRO_Init(LSM6DSL_G_0, &LSM6DSL_G_0_handle) != COMPONENT_OK)
+  {
+    while (1)
+      ;
+  }
+
+  if (BSP_MAGNETO_Init(LIS2MDL_M_0, &LIS2MDL_M_0_handle) != COMPONENT_OK)
+  {
+    while (1)
+      ;
+  }
+
+  if (BSP_PRESSURE_Init(LPS22HB_P_0, &LPS22HB_P_0_handle) != COMPONENT_OK)
+  {
+    while (1)
+      ;
+  }
+
+  //  if (BSP_TEMPERATURE_Init( LPS22HB_T_0, &LPS22HB_T_0_handle ) != COMPONENT_OK)
+  //  {
+  //    while(1);
+  //  }
+  //
 }
 
 /**
-* @brief  Enable all sensors
-* @param  None
-* @retval None
-*/
-void enableAllSensors( void )
+ * @brief  Enable all sensors
+ * @param  None
+ * @retval None
+ */
+void enableAllSensors(void)
 {
-  BSP_ACCELERO_Sensor_Enable( LSM6DSL_X_0_handle );
+  BSP_ACCELERO_Sensor_Enable(LSM6DSL_X_0_handle);
   PRINTF("LSM6DSL MEMS Accelerometer initialized and enabled\n");
-  BSP_GYRO_Sensor_Enable( LSM6DSL_G_0_handle );
+  BSP_GYRO_Sensor_Enable(LSM6DSL_G_0_handle);
   PRINTF("LSM6DSL MEMS Gyroscope initialized and enabled\n");
-  BSP_MAGNETO_Sensor_Enable( LIS2MDL_M_0_handle );
+  BSP_MAGNETO_Sensor_Enable(LIS2MDL_M_0_handle);
   PRINTF("LIS2MDL Magnetometer initialized and enabled\n");
-  BSP_PRESSURE_Sensor_Enable( LPS22HB_P_0_handle );
+  BSP_PRESSURE_Sensor_Enable(LPS22HB_P_0_handle);
   PRINTF("LPS22HB Pressure sensor initialized and enabled\n");
-//  BSP_TEMPERATURE_Sensor_Enable( LPS22HB_T_0_handle );
+  //  BSP_TEMPERATURE_Sensor_Enable( LPS22HB_T_0_handle );
 }
-
-
 
 /* USER CODE END 4 */
 
 #ifdef USE_FULL_ASSERT
 
 /**
-   * @brief Reports the name of the source file and the source line number
-   * where the assert_param error has occurred.
-   * @param file: pointer to the source file name
-   * @param line: assert_param error line source number
-   * @retval None
-   */
-void assert_failed(uint8_t* file, uint32_t line)
+ * @brief Reports the name of the source file and the source line number
+ * where the assert_param error has occurred.
+ * @param file: pointer to the source file name
+ * @param line: assert_param error line source number
+ * @retval None
+ */
+void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */
   /* User can add his own implementation to report the file name and line number,
     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
   /* USER CODE END 6 */
-
 }
 
 #endif
 
 /**
-  * @}
-  */
+ * @}
+ */
 
 /**
-  * @}
-*/
+ * @}
+ */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

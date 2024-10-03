@@ -57,7 +57,7 @@ void FlightControlPID(EulerAngleTypeDef *euler_rc, EulerAngleTypeDef *euler_ahrs
 {
   float error, deriv;
 
-  if(gTHR<MIN_THR)
+  if (gTHR < MIN_THR)
   {
     pid_x_integ1 = 0;
     pid_y_integ1 = 0;
@@ -67,201 +67,213 @@ void FlightControlPID(EulerAngleTypeDef *euler_rc, EulerAngleTypeDef *euler_ahrs
     pid_z_integ2 = 0;
   }
 
-  
-  //x-axis pid
+  // x-axis pid
   error = euler_rc->thx - euler_ahrs->thx;
-  pid_x_integ1 += error*pid->ts;
-  if(pid_x_integ1 > pid->x_i1_limit)
+  pid_x_integ1 += error * pid->ts;
+  if (pid_x_integ1 > pid->x_i1_limit)
     pid_x_integ1 = pid->x_i1_limit;
-  else if(pid_x_integ1 < -pid->x_i1_limit)
+  else if (pid_x_integ1 < -pid->x_i1_limit)
     pid_x_integ1 = -pid->x_i1_limit;
-  pid->x_s1 =  pid->x_kp1*error + pid->x_ki1*pid_x_integ1;
+  pid->x_s1 = pid->x_kp1 * error + pid->x_ki1 * pid_x_integ1;
 
   error = euler_rc->thx - gyro_rad->gx;
-  pid_x_integ2 += error*pid->ts;
-  if(pid_x_integ2 > pid->x_i2_limit)
+  pid_x_integ2 += error * pid->ts;
+  if (pid_x_integ2 > pid->x_i2_limit)
     pid_x_integ2 = pid->x_i2_limit;
-  else if(pid_x_integ2 < -pid->x_i2_limit)
+  else if (pid_x_integ2 < -pid->x_i2_limit)
     pid_x_integ2 = -pid->x_i2_limit;
   deriv = error - pid_x_pre_error2;
   pid_x_pre_error2 = error;
-  pid->x_s2 = pid->x_kp2*error + pid->x_ki2*pid_x_integ2 + pid->x_kd2*deriv;
+  pid->x_s2 = pid->x_kp2 * error + pid->x_ki2 * pid_x_integ2 + pid->x_kd2 * deriv;
 
-  if(pid->x_s2 > MAX_ADJ_AMOUNT)  pid->x_s2 = MAX_ADJ_AMOUNT;
-  if(pid->x_s2 < -MAX_ADJ_AMOUNT)  pid->x_s2 = -MAX_ADJ_AMOUNT;
+  if (pid->x_s2 > MAX_ADJ_AMOUNT)
+    pid->x_s2 = MAX_ADJ_AMOUNT;
+  if (pid->x_s2 < -MAX_ADJ_AMOUNT)
+    pid->x_s2 = -MAX_ADJ_AMOUNT;
 
-
-  //y-axis pid
+  // y-axis pid
   error = euler_rc->thy - euler_ahrs->thy;
-  pid_y_integ1 += error*pid->ts;
-  if(pid_y_integ1 > pid->y_i1_limit)
+  pid_y_integ1 += error * pid->ts;
+  if (pid_y_integ1 > pid->y_i1_limit)
     pid_y_integ1 = pid->y_i1_limit;
-  else if(pid_y_integ1 < -pid->y_i1_limit)
+  else if (pid_y_integ1 < -pid->y_i1_limit)
     pid_y_integ1 = -pid->y_i1_limit;
-  pid->y_s1 =  pid->y_kp1*error + pid->y_ki1*pid_y_integ1;
+  pid->y_s1 = pid->y_kp1 * error + pid->y_ki1 * pid_y_integ1;
 
   error = euler_rc->thy - gyro_rad->gy;
-  pid_y_integ2 += error*pid->ts;
-  if(pid_y_integ2 > pid->y_i2_limit)
+  pid_y_integ2 += error * pid->ts;
+  if (pid_y_integ2 > pid->y_i2_limit)
     pid_y_integ2 = pid->y_i2_limit;
-  else if(pid_y_integ2 < -pid->y_i2_limit)
+  else if (pid_y_integ2 < -pid->y_i2_limit)
     pid_y_integ2 = -pid->y_i2_limit;
   deriv = error - pid_y_pre_error2;
   pid_y_pre_error2 = error;
-  pid->y_s2 = pid->y_kp2*error + pid->y_ki2*pid_y_integ2 + pid->y_kd2*deriv;
+  pid->y_s2 = pid->y_kp2 * error + pid->y_ki2 * pid_y_integ2 + pid->y_kd2 * deriv;
 
-  if(pid->y_s2 > MAX_ADJ_AMOUNT)  pid->y_s2 = MAX_ADJ_AMOUNT;
-  if(pid->y_s2 < -MAX_ADJ_AMOUNT)  pid->y_s2 = -MAX_ADJ_AMOUNT;
+  if (pid->y_s2 > MAX_ADJ_AMOUNT)
+    pid->y_s2 = MAX_ADJ_AMOUNT;
+  if (pid->y_s2 < -MAX_ADJ_AMOUNT)
+    pid->y_s2 = -MAX_ADJ_AMOUNT;
 
-
-  //z-axis pid
+  // z-axis pid
   error = euler_rc->thz - gyro_rad->gz;
-  pid_z_integ2 += error*pid->ts;
-  if(pid_z_integ2 > pid->z_i2_limit)
+  pid_z_integ2 += error * pid->ts;
+  if (pid_z_integ2 > pid->z_i2_limit)
     pid_z_integ2 = pid->z_i2_limit;
-  else if(pid_z_integ2 < -pid->z_i2_limit)
+  else if (pid_z_integ2 < -pid->z_i2_limit)
     pid_z_integ2 = -pid->z_i2_limit;
   deriv = error - pid_z_pre_error2;
   pid_z_pre_error2 = error;
-  pid->z_s2 = pid->z_kp2*error + pid->z_ki2*pid_y_integ2 + pid->z_kd2*deriv;
+  pid->z_s2 = pid->z_kp2 * error + pid->z_ki2 * pid_y_integ2 + pid->z_kd2 * deriv;
 
-  if(pid->z_s2 > MAX_ADJ_AMOUNT)  pid->z_s2 = MAX_ADJ_AMOUNT;
-  if(pid->z_s2 < -MAX_ADJ_AMOUNT)  pid->z_s2 = -MAX_ADJ_AMOUNT;
+  if (pid->z_s2 > MAX_ADJ_AMOUNT)
+    pid->z_s2 = MAX_ADJ_AMOUNT;
+  if (pid->z_s2 < -MAX_ADJ_AMOUNT)
+    pid->z_s2 = -MAX_ADJ_AMOUNT;
 
-  #ifdef MOTOR_DC
+#ifdef MOTOR_DC
 
-    motor_thr = 0.33333f*gTHR + 633.333f;           //Devo7E >> 630 to 1700
-  
-  #endif
-  
-  #ifdef MOTOR_ESC
-  
-    //motor_thr = 0.28f*gTHR + 750.0f;                 //TGY-i6 remocon and external ESC STEVAL-ESC001V1
-    //motor_thr = 0.28f*gTHR + 850.0f;                 //TGY-i6 remocon and external ESC Afro12A
-    motor_thr = 0.32f*gTHR + 900.0f;                //TGY-i6 remocon and external ESC Afro12A
+  motor_thr = 0.33333f * gTHR + 633.333f; // Devo7E >> 630 to 1700
 
-  #endif
-  
-  
+#endif
+
+#ifdef MOTOR_ESC
+
+  // motor_thr = 0.28f*gTHR + 750.0f;                 //TGY-i6 remocon and external ESC STEVAL-ESC001V1
+  // motor_thr = 0.28f*gTHR + 850.0f;                 //TGY-i6 remocon and external ESC Afro12A
+  motor_thr = 0.32f * gTHR + 900.0f; // TGY-i6 remocon and external ESC Afro12A
+
+#endif
+
   motor_pwm->motor1_pwm = motor_thr - pid->x_s2 - pid->y_s2 + pid->z_s2 + MOTOR_OFF1;
   motor_pwm->motor2_pwm = motor_thr + pid->x_s2 - pid->y_s2 - pid->z_s2 + MOTOR_OFF2;
   motor_pwm->motor3_pwm = motor_thr + pid->x_s2 + pid->y_s2 + pid->z_s2 + MOTOR_OFF3;
   motor_pwm->motor4_pwm = motor_thr - pid->x_s2 + pid->y_s2 - pid->z_s2 + MOTOR_OFF4;
-
-
 }
 
 void FlightControlPID_OuterLoop(EulerAngleTypeDef *euler_rc, EulerAngleTypeDef *euler_ahrs, AHRS_State_TypeDef *ahrs, P_PI_PIDControlTypeDef *pid)
 {
   float error;
 
-  if(gTHR<MIN_THR)
+  if (gTHR < MIN_THR)
   {
     pid_x_integ1 = 0;
     pid_y_integ1 = 0;
     pid_z_integ1 = 0;
   }
 
-  //x-axis pid
-  error = euler_rc->thx - euler_ahrs->thx;
-  pid_x_integ1 += error*pid->ts;
-  if(pid_x_integ1 > pid->x_i1_limit)
+  // x-axis pid
+  error = euler_rc->thx - euler_ahrs->thx; // 目標値 - 現在
+  pid_x_integ1 += error * pid->ts;         // エラーの積算, tsはサンプリング間隔
+
+  if (pid_x_integ1 > pid->x_i1_limit)
     pid_x_integ1 = pid->x_i1_limit;
-  else if(pid_x_integ1 < -pid->x_i1_limit)
+  else if (pid_x_integ1 < -pid->x_i1_limit)
     pid_x_integ1 = -pid->x_i1_limit;
-  pid->x_s1 =  pid->x_kp1*error + pid->x_ki1*pid_x_integ1;
+  // KpとKiの係数をかけて最終値にする（d制御は使ってない）
+  pid->x_s1 = pid->x_kp1 * error + pid->x_ki1 * pid_x_integ1;
 
-  //y-axis pid
+  // y-axis pid
   error = euler_rc->thy - euler_ahrs->thy;
-  pid_y_integ1 += error*pid->ts;
-  if(pid_y_integ1 > pid->y_i1_limit)
+  pid_y_integ1 += error * pid->ts;
+  if (pid_y_integ1 > pid->y_i1_limit)
     pid_y_integ1 = pid->y_i1_limit;
-  else if(pid_y_integ1 < -pid->y_i1_limit)
+  else if (pid_y_integ1 < -pid->y_i1_limit)
     pid_y_integ1 = -pid->y_i1_limit;
-  pid->y_s1 =  pid->y_kp1*error + pid->y_ki1*pid_y_integ1;
+  pid->y_s1 = pid->y_kp1 * error + pid->y_ki1 * pid_y_integ1;
 
-  //z-axis pid
+  // z-axis pid
   error = euler_rc->thz - euler_ahrs->thz;
-  pid_z_integ1 += error*pid->ts;
-  if(pid_z_integ1 > pid->z_i1_limit)
+  pid_z_integ1 += error * pid->ts;
+  if (pid_z_integ1 > pid->z_i1_limit)
     pid_z_integ1 = pid->z_i1_limit;
-  else if(pid_z_integ1 < -pid->z_i1_limit)
+  else if (pid_z_integ1 < -pid->z_i1_limit)
     pid_z_integ1 = -pid->z_i1_limit;
-  pid->z_s1 =  pid->z_kp1*error + pid->z_ki1*pid_z_integ1;
+  pid->z_s1 = pid->z_kp1 * error + pid->z_ki1 * pid_z_integ1;
 }
 
 void FlightControlPID_innerLoop(EulerAngleTypeDef *euler_rc, Gyro_Rad *gyro_rad, AHRS_State_TypeDef *ahrs, P_PI_PIDControlTypeDef *pid, MotorControlTypeDef *motor_pwm)
 {
   float error, deriv;
 
-  if(gTHR<MIN_THR)
+  if (gTHR < MIN_THR)
   {
     pid_x_integ2 = 0;
     pid_y_integ2 = 0;
     pid_z_integ2 = 0;
   }
-  
-  dt_recip = 1/pid->ts;
 
-  //X Axis
-  error = pid->x_s1 - gyro_rad->gx;
-  pid_x_integ2 += error*pid->ts;
-  if(pid_x_integ2 > pid->x_i2_limit)
+  dt_recip = 1 / pid->ts;
+
+  // X Axis
+  error = pid->x_s1 - gyro_rad->gx; // 偏差
+  pid_x_integ2 += error * pid->ts;  // 積算
+
+  if (pid_x_integ2 > pid->x_i2_limit)
     pid_x_integ2 = pid->x_i2_limit;
-  else if(pid_x_integ2 < -pid->x_i2_limit)
+  else if (pid_x_integ2 < -pid->x_i2_limit)
     pid_x_integ2 = -pid->x_i2_limit;
-  deriv = (error - pid_x_pre_error2)*dt_recip;
+
+  deriv = (error - pid_x_pre_error2) * dt_recip; // 微分
   pid_x_pre_error2 = error;
-  deriv = pid_x_pre_deriv + (deriv - pid_x_pre_deriv)*D_FILTER_COFF;
+
+  // RCフィルタ処理（ 出力値 = a * 前回の出力値 ＋ (1-a) * センサの値 ）
+  deriv = pid_x_pre_deriv + (deriv - pid_x_pre_deriv) * D_FILTER_COFF;
   pid_x_pre_deriv = deriv;
-  pid->x_s2 = pid->x_kp2*error + pid->x_ki2*pid_x_integ2 + pid->x_kd2*deriv;
-  
-  if(pid->x_s2 > MAX_ADJ_AMOUNT)  pid->x_s2 = MAX_ADJ_AMOUNT;
-  if(pid->x_s2 < -MAX_ADJ_AMOUNT)  pid->x_s2 = -MAX_ADJ_AMOUNT;
 
-  //Y Axis
+  // PID計算
+  pid->x_s2 = pid->x_kp2 * error + pid->x_ki2 * pid_x_integ2 + pid->x_kd2 * deriv;
+
+  if (pid->x_s2 > MAX_ADJ_AMOUNT)
+    pid->x_s2 = MAX_ADJ_AMOUNT;
+  if (pid->x_s2 < -MAX_ADJ_AMOUNT)
+    pid->x_s2 = -MAX_ADJ_AMOUNT;
+
+  // Y Axis
   error = pid->y_s1 - gyro_rad->gy;
-  pid_y_integ2 += error*pid->ts;
-  if(pid_y_integ2 > pid->y_i2_limit)
+  pid_y_integ2 += error * pid->ts;
+  if (pid_y_integ2 > pid->y_i2_limit)
     pid_y_integ2 = pid->y_i2_limit;
-  else if(pid_y_integ2 < -pid->y_i2_limit)
+  else if (pid_y_integ2 < -pid->y_i2_limit)
     pid_y_integ2 = -pid->y_i2_limit;
-  deriv = (error - pid_y_pre_error2)*dt_recip;
+  deriv = (error - pid_y_pre_error2) * dt_recip;
   pid_y_pre_error2 = error;
-  deriv = pid_y_pre_deriv + (deriv - pid_y_pre_deriv)*D_FILTER_COFF;
+  deriv = pid_y_pre_deriv + (deriv - pid_y_pre_deriv) * D_FILTER_COFF;
   pid_y_pre_deriv = deriv;
-  pid->y_s2 = pid->y_kp2*error + pid->y_ki2*pid_y_integ2 + pid->y_kd2*deriv;
+  pid->y_s2 = pid->y_kp2 * error + pid->y_ki2 * pid_y_integ2 + pid->y_kd2 * deriv;
 
-  if(pid->y_s2 > MAX_ADJ_AMOUNT)  pid->y_s2 = MAX_ADJ_AMOUNT;
-  if(pid->y_s2 < -MAX_ADJ_AMOUNT)  pid->y_s2 = -MAX_ADJ_AMOUNT;
+  if (pid->y_s2 > MAX_ADJ_AMOUNT)
+    pid->y_s2 = MAX_ADJ_AMOUNT;
+  if (pid->y_s2 < -MAX_ADJ_AMOUNT)
+    pid->y_s2 = -MAX_ADJ_AMOUNT;
 
-  //Z Axis
+  // Z Axis
   error = pid->z_s1 - gyro_rad->gz;
-  pid_z_integ2 += error*pid->ts;
-  if(pid_z_integ2 > pid->z_i2_limit)
+  pid_z_integ2 += error * pid->ts;
+  if (pid_z_integ2 > pid->z_i2_limit)
     pid_z_integ2 = pid->z_i2_limit;
-  else if(pid_z_integ2 < -pid->z_i2_limit)
+  else if (pid_z_integ2 < -pid->z_i2_limit)
     pid_z_integ2 = -pid->z_i2_limit;
-  deriv = (error - pid_z_pre_error2)*dt_recip;
+  deriv = (error - pid_z_pre_error2) * dt_recip;
   pid_z_pre_error2 = error;
-  pid->z_s2 = pid->z_kp2*error + pid->z_ki2*pid_z_integ2 + pid->z_kd2*deriv;
+  pid->z_s2 = pid->z_kp2 * error + pid->z_ki2 * pid_z_integ2 + pid->z_kd2 * deriv;
 
-  if(pid->z_s2 > MAX_ADJ_AMOUNT_YAW)  pid->z_s2 = MAX_ADJ_AMOUNT_YAW;
-  if(pid->z_s2 < -MAX_ADJ_AMOUNT_YAW)  pid->z_s2 = -MAX_ADJ_AMOUNT_YAW;
+  if (pid->z_s2 > MAX_ADJ_AMOUNT_YAW)
+    pid->z_s2 = MAX_ADJ_AMOUNT_YAW;
+  if (pid->z_s2 < -MAX_ADJ_AMOUNT_YAW)
+    pid->z_s2 = -MAX_ADJ_AMOUNT_YAW;
 
-  
 #ifdef MOTOR_DC
 
-  motor_thr = 0.33333f*gTHR + 633.333f;           //Remocon Devo7E >> 630 to 1700
-  
-#endif
-  
-#ifdef MOTOR_ESC
-  
-  //motor_thr = 0.28f*gTHR + 750.0f;                 //TGY-i6 remocon and external ESC STEVAL-ESC001V1
-  //motor_thr = 0.28f*gTHR + 850.0f;                 //TGY-i6 remocon and external ESC Afro12A
-  motor_thr = 0.32f*gTHR + 900.0f;                 //TGY-i6 remocon and external ESC Afro12A
+  motor_thr = 0.33333f * gTHR + 633.333f; // Remocon Devo7E >> 630 to 1700
 
+#endif
+
+#ifdef MOTOR_ESC
+
+  // motor_thr = 0.28f*gTHR + 750.0f;                 //TGY-i6 remocon and external ESC STEVAL-ESC001V1
+  // motor_thr = 0.28f*gTHR + 850.0f;                 //TGY-i6 remocon and external ESC Afro12A
+  motor_thr = 0.32f * gTHR + 900.0f; // TGY-i6 remocon and external ESC Afro12A
 
 #endif
 
@@ -269,14 +281,12 @@ void FlightControlPID_innerLoop(EulerAngleTypeDef *euler_rc, Gyro_Rad *gyro_rad,
   motor_pwm->motor2_pwm = motor_thr + pid->x_s2 - pid->y_s2 - pid->z_s2 + MOTOR_OFF2;
   motor_pwm->motor3_pwm = motor_thr + pid->x_s2 + pid->y_s2 + pid->z_s2 + MOTOR_OFF3;
   motor_pwm->motor4_pwm = motor_thr - pid->x_s2 + pid->y_s2 - pid->z_s2 + MOTOR_OFF4;
-
 }
 
 void PIDOuterLoopFrameTrans(P_PI_PIDControlTypeDef *pid, EulerAngleTypeDef *euler_ahrs)
 {
   float cosx;
-  
-  cosx = cos(euler_ahrs->thx);
-  pid->y_s1 = cosx*pid->y_s1;
 
+  cosx = cos(euler_ahrs->thx);
+  pid->y_s1 = cosx * pid->y_s1;
 }
